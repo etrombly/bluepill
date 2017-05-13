@@ -3,7 +3,7 @@
 use core::u16;
 
 use cast::{u16, u32};
-use stm32f30x::{Rcc, Tim7};
+use stm32f103xx::{Rcc, Tim2};
 
 use frequency;
 
@@ -19,37 +19,37 @@ pub struct Error {
 ///
 /// # Interrupts
 ///
-/// - `Tim7` - update event
+/// - `Tim2` - update event
 #[derive(Clone, Copy)]
-pub struct Timer<'a>(pub &'a Tim7);
+pub struct Timer<'a>(pub &'a Tim2);
 
 impl<'a> Timer<'a> {
     /// Initializes the timer with a periodic timeout of `frequency` Hz
     ///
     /// NOTE After initialization, the timer will be in the paused state.
     pub fn init(&self, rcc: &Rcc, frequency: u32) {
-        let tim7 = self.0;
+        let tim2 = self.0;
 
         // Power up peripherals
-        rcc.apb1enr.modify(|_, w| w.tim7en().enabled());
+        rcc.apb1enr.modify(|_, w| w.tim2en().enabled());
 
         let ratio = frequency::APB1 / frequency;
         let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
-        tim7.psc.write(|w| w.psc().bits(psc));
+        tim2.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ratio / u32(psc + 1)).unwrap();
-        tim7.arr.write(|w| w.arr().bits(arr));
+        tim2.arr.write(|w| w.arr().bits(arr));
 
-        tim7.dier.write(|w| unsafe { w.uie().bits(1) });
-        tim7.cr1.write(|w| w.opm().continuous());
+        tim2.dier.write(|w| unsafe { w.uie().bits(1) });
+        tim2.cr1.write(|w| w.opm().continuous());
     }
 
     /// Clears the update event flag
     ///
     /// Returns `Err` if no update event has occurred
     pub fn clear_update_flag(&self) -> Result<()> {
-        let tim7 = self.0;
+        let tim2 = self.0;
 
-        if tim7.sr.read().uif().is_no_update() {
+        if tim2.sr.read().uif().is_no_update() {
             Err(Error { _0: () })
         } else {
             self.0.sr.modify(|_, w| w.uif().clear());

@@ -1,4 +1,4 @@
-//! Board Support Crate for the STM32F3DISCOVERY
+//! Board Support Crate for the bluepill
 //!
 //! # Usage
 //!
@@ -16,17 +16,18 @@
 //! [examples]: ./examples/index.html
 
 #![deny(missing_docs)]
-#![deny(warnings)]
+//#![deny(warnings)]
 #![no_std]
 
 extern crate cast;
-pub extern crate stm32f30x;
+pub extern crate stm32f103xx;
 
 // For documentation only
 pub mod examples;
 
 pub mod led;
-pub mod serial;
+//pub mod serial;
 pub mod timer;
+pub mod clock;
 
 mod frequency;

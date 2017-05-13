@@ -6,7 +6,7 @@
 use core::ptr;
 
 use cast::{u16, u8};
-use stm32f30x::{Gpioa, Rcc, Usart1};
+use stm32f103xx::{Gpioa, Rcc, Usart1};
 
 use frequency;
 

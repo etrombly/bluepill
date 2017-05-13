@@ -1,14 +1,8 @@
-[![Build status](https://travis-ci.org/japaric/f3.svg?branch=master)](https://travis-ci.org/japaric/f3)
-[![crates.io](https://img.shields.io/crates/d/f3.svg)](https://crates.io/crates/f3)
-[![crates.io](https://img.shields.io/crates/v/f3.svg)](https://crates.io/crates/f3)
+# `bluepill`
 
-# `f3`
+> Board Support Crate for the bluepill
 
-> Board Support Crate for the STM32F3DISCOVERY
-
-[STM32F3DISCOVERY]: http://www.st.com/en/evaluation-tools/stm32f3discovery.html
-
-## [Documentation](https://docs.rs/f3)
+[bluepill]: http://wiki.stm32duino.com/index.php?title=Blue_Pill
 
 ## [Change log](CHANGELOG.md)
 

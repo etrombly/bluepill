@@ -1,16 +1,15 @@
 [package]
-authors = ["Jorge Aparicio <jorge@japaric.io>"]
+authors = ["Eric Trombly <etrombly@gmail.com>"]
 categories = ["asynchronous", "embedded", "hardware-support", "no-std"]
-description = "Board Support Crate for the STM32F3DISCOVERY"
-documentation = "https://docs.rs/f3"
+description = "Board Support Crate for the bluepill"
 keywords = ["arm", "cortex-m", "stm32"]
 license = "MIT OR Apache-2.0"
-name = "f3"
-repository = "https://github.com/japaric/f3"
-version = "0.4.1"
+name = "bluepill"
+repository = "https://github.com/etrombly/bluepill"
+version = "0.0.1"
 
 [dependencies]
-stm32f30x = "0.4.1"
+stm32f103xx = { path = "../stm32f103xx"}
 
 [dependencies.cast]
 default-features = false
