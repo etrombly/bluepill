@@ -121,7 +121,7 @@ pub fn init(rcc: &Rcc, flash: &Flash, speed: Speed) {
     flash.acr.modify(|_,w| w.prftbe().enabled());
 
     match speed {
-        Speed::S8Mhz => {},
+        Speed::S8Mhz => rcc.cfgr.modify(|_,w| w.sw().hse()),
         Speed::S16Mhz => {
             rcc.cfgr.modify(|_,w| w.pllmul().mul2());
             use_pll(rcc);
