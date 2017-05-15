@@ -4,10 +4,97 @@
 pub const HSI: u32 = 8_000_000;
 /// External clock
 pub const HSE: u32 = 8_000_000;
-/// Low Speed bus
-pub const APB1: u32 = 36_000_000;
 
-use stm32f103xx::{Rcc, Flash};
+use stm32f103xx::{Rcc, Flash, rcc};
+
+/// Board clock speeds
+pub struct ClockSpeeds{
+    /// System Clock
+    pub sysclk: u32,
+    /// AHB peripheral clock
+    pub hclk: u32,
+    /// Low speed bus
+    pub apb1: u32,
+    /// high speed bus
+    pub apb2: u32,
+}
+
+impl ClockSpeeds {
+    /// Get clock speeds
+    pub fn get(rcc: &Rcc) -> ClockSpeeds {
+        let sysclk = match rcc.cfgr.read().sws(){
+            rcc::cfgr::SwsR::Hse => HSE,
+            rcc::cfgr::SwsR::Pll => Self::get_pll_speed(rcc),
+            _ => HSI,
+        };
+
+        let hclk = match rcc.cfgr.read().hpre() {
+            rcc::cfgr::HpreR::Div2 => sysclk / 2,
+            rcc::cfgr::HpreR::Div4 => sysclk / 4,
+            rcc::cfgr::HpreR::Div8 => sysclk / 8,
+            rcc::cfgr::HpreR::Div16 => sysclk / 16,
+            rcc::cfgr::HpreR::Div64 => sysclk / 64,
+            rcc::cfgr::HpreR::Div128 => sysclk / 128,
+            rcc::cfgr::HpreR::Div256 => sysclk / 256,
+            rcc::cfgr::HpreR::Div512 => sysclk / 512,
+            _ => sysclk,
+        };
+
+        let apb1 = match rcc.cfgr.read().ppre1() {
+            rcc::cfgr::Ppre1R::Div2 => hclk / 2,
+            rcc::cfgr::Ppre1R::Div4 => hclk / 4,
+            rcc::cfgr::Ppre1R::Div8 => hclk / 8,
+            rcc::cfgr::Ppre1R::Div16 => hclk / 16,
+            _ => hclk,
+        };
+
+        let apb2 = match rcc.cfgr.read().ppre2() {
+            rcc::cfgr::Ppre2R::Div2 => hclk / 2,
+            rcc::cfgr::Ppre2R::Div4 => hclk / 4,
+            rcc::cfgr::Ppre2R::Div8 => hclk / 8,
+            rcc::cfgr::Ppre2R::Div16 => hclk / 16,
+            _ => hclk,
+        };
+
+        ClockSpeeds{
+            sysclk: sysclk,
+            hclk: hclk,
+            apb1: apb1,
+            apb2: apb2,
+        }
+    }
+
+    fn get_pll_speed(rcc: &Rcc) -> u32 {
+        let hse_div = match rcc.cfgr.read().pllxtpre(){
+            rcc::cfgr::PllxtpreR::Nodiv => 1,
+            rcc::cfgr::PllxtpreR::Div2 => 2,
+        };
+
+        let src_spd = match rcc.cfgr.read().pllsrc(){
+            rcc::cfgr::PllsrcR::Internal => HSI / 2,
+            rcc::cfgr::PllsrcR::External => HSE / hse_div,
+        };
+
+        match rcc.cfgr.read().pllmul() {
+            rcc::cfgr::PllmulR::Mul2 => src_spd * 2,
+            rcc::cfgr::PllmulR::Mul3 => src_spd * 3,
+            rcc::cfgr::PllmulR::Mul4 => src_spd * 4,
+            rcc::cfgr::PllmulR::Mul5 => src_spd * 5,
+            rcc::cfgr::PllmulR::Mul6 => src_spd * 6,
+            rcc::cfgr::PllmulR::Mul7 => src_spd * 7,
+            rcc::cfgr::PllmulR::Mul8 => src_spd * 8,
+            rcc::cfgr::PllmulR::Mul9 => src_spd * 9,
+            rcc::cfgr::PllmulR::Mul10 => src_spd * 10,
+            rcc::cfgr::PllmulR::Mul11 => src_spd * 11,
+            rcc::cfgr::PllmulR::Mul12 => src_spd * 12,
+            rcc::cfgr::PllmulR::Mul13 => src_spd * 13,
+            rcc::cfgr::PllmulR::Mul14 => src_spd * 14,
+            rcc::cfgr::PllmulR::Mul15 => src_spd * 15,
+            rcc::cfgr::PllmulR::Mul16 => src_spd * 16,
+            _ => src_spd,
+        }
+    }
+}
 
 /// Preconfigured clock speed options
 /// enum fields can't start with a number makes the names not look as good

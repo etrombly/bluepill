@@ -47,7 +47,9 @@ impl Timer for Tim2{
         // Power up peripherals
         rcc.apb1enr.modify(|_, w| w.tim2en().enabled());
 
-        let ratio = frequency::APB1 / frequency;
+        let speeds = frequency::ClockSpeeds::get(rcc);
+
+        let ratio = speeds.apb1 / frequency;
         let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
         self.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ratio / u32(psc + 1)).unwrap();
@@ -71,7 +73,9 @@ impl Timer for Tim3{
         // Power up peripherals
         rcc.apb1enr.modify(|_, w| w.tim3en().enabled());
 
-        let ratio = frequency::APB1 / frequency;
+        let speeds = frequency::ClockSpeeds::get(rcc);
+
+        let ratio = speeds.apb1 / frequency;
         let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
         self.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ratio / u32(psc + 1)).unwrap();
@@ -98,7 +102,9 @@ impl Timer for Tim4{
         // Power up peripherals
         rcc.apb1enr.modify(|_, w| w.tim4en().enabled());
 
-        let ratio = frequency::APB1 / frequency;
+        let speeds = frequency::ClockSpeeds::get(rcc);
+
+        let ratio = speeds.apb1 / frequency;
         let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
         self.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ratio / u32(psc + 1)).unwrap();
@@ -125,7 +131,9 @@ impl Timer for Tim5{
         // Power up peripherals
         rcc.apb1enr.modify(|_, w| w.tim5en().enabled());
 
-        let ratio = frequency::APB1 / frequency;
+        let speeds = frequency::ClockSpeeds::get(rcc);
+
+        let ratio = speeds.apb1 / frequency;
         let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
         self.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ratio / u32(psc + 1)).unwrap();
