@@ -18,6 +18,7 @@
 #![deny(missing_docs)]
 //#![deny(warnings)]
 #![no_std]
+#![feature(associated_type_defaults)]
 
 extern crate cast;
 pub extern crate stm32f103xx;
@@ -29,5 +30,6 @@ pub mod led;
 //pub mod serial;
 pub mod timer;
 pub mod clock;
+pub mod pin;
 
 mod frequency;
