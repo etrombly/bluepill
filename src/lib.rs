@@ -32,4 +32,4 @@ pub mod timer;
 pub mod clock;
 pub mod pin;
 
-mod frequency;
+pub mod frequency;

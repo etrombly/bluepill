@@ -21,6 +21,7 @@ pub trait Pin {
                 },
             );
     }
+    
     /// Turns off the Pin
     fn off(&self) {
         // NOTE(safe) atomic write
