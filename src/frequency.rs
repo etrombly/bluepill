@@ -66,7 +66,7 @@ impl ClockSpeeds {
 
     fn get_pll_speed(rcc: &Rcc) -> u32 {
         let hse_div = match rcc.cfgr.read().pllxtpre(){
-            rcc::cfgr::PllxtpreR::Nodiv => 1,
+            rcc::cfgr::PllxtpreR::Div1 => 1,
             rcc::cfgr::PllxtpreR::Div2 => 2,
         };
 
