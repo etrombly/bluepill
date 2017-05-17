@@ -9,6 +9,9 @@ repository = "https://github.com/etrombly/bluepill"
 version = "0.0.1"
 
 [dependencies]
+cortex-m = "0.2.4"
+cortex-m-rt = "0.2.0"
+cortex-m-rtfm = "0.1.0"
 stm32f103xx = { path = "../stm32f103xx"}
 
 [dependencies.cast]

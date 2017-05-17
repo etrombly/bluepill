@@ -1,3 +1,4 @@
+// examples/blinky.rs
 //! Blinks an LED
 
 #![feature(const_fn)]
@@ -11,44 +12,54 @@ extern crate cortex_m_rt;
 #[macro_use]
 extern crate cortex_m_rtfm as rtfm;
 
-extern crate f3;
+extern crate bluepill;
 
-use f3::led::{self, LEDS};
-use f3::stm32f30x::interrupt::Tim7;
-use f3::stm32f30x;
-use f3::timer::Timer;
+use bluepill::led::{self, LEDS};
+use bluepill::frequency;
+use bluepill::stm32f103xx::interrupt::Tim3;
+use bluepill::stm32f103xx;
+use bluepill::timer::genTimer;
+use bluepill::timer::Timer;
 use rtfm::{Local, P0, P1, T0, T1, TMax};
 
 // CONFIGURATION
 const FREQUENCY: u32 = 1; // Hz
 
 // RESOURCES
-peripherals!(stm32f30x, {
-    GPIOE: Peripheral {
-        register_block: Gpioe,
+peripherals!(stm32f103xx, {
+    GPIOC: Peripheral {
+        register_block: Gpioc,
         ceiling: C0,
     },
     RCC: Peripheral {
         register_block: Rcc,
         ceiling: C0,
     },
-    TIM7: Peripheral {
-        register_block: Tim7,
+    TIM3: Peripheral {
+        register_block: Tim3,
         ceiling: C1,
+    },
+    FLASH: Peripheral {
+        register_block: Flash,
+        ceiling: C0,
     },
 });
 
 // INITIALIZATION PHASE
 fn init(ref priority: P0, threshold: &TMax) {
-    let gpioe = GPIOE.access(priority, threshold);
+    let gpioc = GPIOC.access(priority, threshold);
     let rcc = RCC.access(priority, threshold);
-    let tim7 = TIM7.access(priority, threshold);
-    let timer = Timer(&tim7);
+    let tim3 = TIM3.access(priority, threshold);
+    let flash = FLASH.access(priority, threshold);
+    let timer = genTimer{timer: &**tim3};
+
+    // set clock to 72Mhz
+    frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
 
     // Configure the PEx pins as output pins
-    led::init(&gpioe, &rcc);
+    led::init(&gpioc, &rcc);
 
-    // Configure TIM7 for periodic update events
+    // Configure TIM2 for periodic update events
     timer.init(&rcc, FREQUENCY);
 
     // Start the timer
@@ -64,20 +75,21 @@ fn idle(_priority: P0, _threshold: T0) -> ! {
 }
 
 // TASKS
-tasks!(stm32f30x, {
+tasks!(stm32f103xx, {
     periodic: Task {
-        interrupt: Tim7,
+        interrupt: Tim3,
         priority: P1,
         enabled: true,
     },
 });
 
-fn periodic(mut task: Tim7, ref priority: P1, ref threshold: T1) {
+fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
     // Task local data
-    static STATE: Local<bool, Tim7> = Local::new(false);
+    static STATE: Local<bool, Tim3> = Local::new(false);
 
-    let tim7 = TIM7.access(priority, threshold);
-    let timer = Timer(&tim7);
+
+    let tim3 = TIM3.access(priority, threshold);
+    let timer = genTimer{timer: &**tim3};
 
     if timer.clear_update_flag().is_ok() {
         let state = STATE.borrow_mut(&mut task);
@@ -91,7 +103,8 @@ fn periodic(mut task: Tim7, ref priority: P1, ref threshold: T1) {
         }
     } else {
         // Only reachable through `rtfm::request(periodic)`
-        #[cfg(debug_assertion)]
-        unreachable!()
+        //#[cfg(debug_assertion)]
+        //unreachable!()
     }
+
 }

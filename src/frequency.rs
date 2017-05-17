@@ -66,7 +66,7 @@ impl ClockSpeeds {
 
     fn get_pll_speed(rcc: &Rcc) -> u32 {
         let hse_div = match rcc.cfgr.read().pllxtpre(){
-            rcc::cfgr::PllxtpreR::Nodiv => 1,
+            rcc::cfgr::PllxtpreR::Div1 => 1,
             rcc::cfgr::PllxtpreR::Div2 => 2,
         };
 
@@ -108,7 +108,8 @@ pub enum Speed {
     /// 72 Mhz
     S72Mhz,}
 
-/// Initializes SYSCLK to 72Mhz
+/// Initializes SYSCLK to requested speed
+/// uses external clock for all speeds
 pub fn init(rcc: &Rcc, flash: &Flash, speed: Speed) {
     // enable external clock
     rcc.cr.modify(|_,w| w.hseon().enabled());
