@@ -37,7 +37,7 @@ pub fn init(gpioc: &Gpioc, rcc: &Rcc) {
         .modify(
             |_, w| {
                 w.mode13()
-                    .output()
+                    .output2()
             },
         );
 }
