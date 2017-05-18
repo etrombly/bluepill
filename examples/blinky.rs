@@ -18,8 +18,7 @@ use bluepill::led::{self, LEDS};
 use bluepill::frequency;
 use bluepill::stm32f103xx::interrupt::Tim3;
 use bluepill::stm32f103xx;
-use bluepill::timer::genTimer;
-use bluepill::timer::Timer;
+use bluepill::timer::{halTimer, Timer};
 use rtfm::{Local, P0, P1, T0, T1, TMax};
 
 // CONFIGURATION
@@ -51,7 +50,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     let rcc = RCC.access(priority, threshold);
     let tim3 = TIM3.access(priority, threshold);
     let flash = FLASH.access(priority, threshold);
-    let timer = genTimer{timer: &**tim3};
+    let timer = Timer{timer: &**tim3};
 
     // set clock to 72Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
@@ -89,7 +88,7 @@ fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
 
 
     let tim3 = TIM3.access(priority, threshold);
-    let timer = genTimer{timer: &**tim3};
+    let timer = Timer{timer: &**tim3};
 
     if timer.clear_update_flag().is_ok() {
         let state = STATE.borrow_mut(&mut task);

@@ -1,12 +1,15 @@
 //! Periodic timer
 
+extern crate hal;
+
 use core::u16;
 
 use cast::{u16, u32};
-use stm32f103xx::{Rcc, Tim2, tim2, Tim3, Tim4, Tim5};
-
+use stm32f103xx::{Rcc, tim2, TIM2, TIM3, TIM4, TIM5};
 
 use frequency;
+
+pub use hal::timer::Timer as halTimer;
 
 /// Specialized `Result` type
 pub type Result<T> = ::core::result::Result<T, Error>;
@@ -16,34 +19,24 @@ pub struct Error {
     _0: (),
 }
 
-/// General use timer
-pub trait Timer {
-    /// Resumes the timer count
-    fn resume(&self);
-    /// Pauses the timer
-    fn pause(&self);
-}
-
 /// General purpose timer
-pub struct genTimer<'a>{
+pub struct Timer<'a>{
     /// general purpose timer
     pub timer: &'a tim2::RegisterBlock,
 }
 
-impl<'a> genTimer<'a>{
+impl<'a> Timer<'a>{
     /// initialize timer to frequency
     pub fn init(&self, rcc: &Rcc, frequency: u32) {
         // Power up peripherals
-        //not working this way, matches on tim2 always
-        match *self{
-            ref Tim2 => rcc.apb1enr.modify(|_, w| w.tim2en().enabled()),
-            ref Tim3 => rcc.apb1enr.modify(|_, w| w.tim3en().enabled()),
-            ref Tim4 => rcc.apb1enr.modify(|_, w| w.tim4en().enabled()),
-            ref Tim5 => rcc.apb1enr.modify(|_, w| w.tim5en().enabled()),
+        // check which memory block this timer is pointing to
+        match &*self.timer as *const _{
+            x if x == TIM2.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim2en().enabled()),
+            x if x == TIM3.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim3en().enabled()),
+            x if x == TIM4.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim4en().enabled()),
+            x if x == TIM5.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim5en().enabled()),
+            _ => {},
         }
-
-        //manually enable tim3 for testing
-        rcc.apb1enr.modify(|_, w| w.tim3en().enabled());
 
         let speeds = frequency::ClockSpeeds::get(rcc);
 
@@ -70,14 +63,12 @@ impl<'a> genTimer<'a>{
     }
 }
 
-impl<'a> Timer for genTimer<'a>{
+impl<'a> halTimer for Timer<'a>{
     fn pause(&self){
             self.timer.cr1.modify(|_, w| w.cen().disabled());
     }
 
     fn resume(&self){
             self.timer.cr1.modify(|_, w| w.cen().enabled());
-            let test = self.timer.cr1.read().cen();
-            let test = self.timer.cr1.read().cen();
     }
 }

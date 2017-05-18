@@ -22,6 +22,7 @@
 
 extern crate cast;
 pub extern crate stm32f103xx;
+pub extern crate hal;
 
 // For documentation only
 pub mod examples;

@@ -2,7 +2,12 @@
 
 use stm32f103xx::{GPIOC, Gpioc, Rcc};
 
-enum mode {INPUT, OUTPUT}
+/// pin mode, input or output
+pub enum Mode {
+    /// input mode
+    INPUT, 
+    /// output mode
+    OUTPUT}
 
 /// Represents a pin
 pub trait Pin {
