@@ -32,22 +32,40 @@ impl<'a> Pin<'a>{
         match mode {
             Mode::INPUT =>
                 match self.pin {
-                    0 => self.port.crl.modify(|_,w| w.mode0().input()),
-                    1 => self.port.crl.modify(|_,w| w.mode1().input()),
-                    2 => self.port.crl.modify(|_,w| w.mode2().input()),
-                    3 => self.port.crl.modify(|_,w| w.mode3().input()),
-                    4 => self.port.crl.modify(|_,w| w.mode4().input()),
-                    5 => self.port.crl.modify(|_,w| w.mode5().input()),
-                    6 => self.port.crl.modify(|_,w| w.mode6().input()),
-                    7 => self.port.crl.modify(|_,w| w.mode7().input()),
-                    8 => self.port.crh.modify(|_,w| w.mode8().input()),
-                    9 => self.port.crh.modify(|_,w| w.mode9().input()),
-                    10 => self.port.crh.modify(|_,w| w.mode10().input()),
-                    11 => self.port.crh.modify(|_,w| w.mode11().input()),
-                    12 => self.port.crh.modify(|_,w| w.mode12().input()),
-                    13 => self.port.crh.modify(|_,w| w.mode13().input()),
-                    14 => self.port.crh.modify(|_,w| w.mode14().input()),
-                    15 => self.port.crh.modify(|_,w| w.mode15().input()),
+                    // cnf alt_push mode is actually input pullup, since cnf is shared 
+                    // for output mode the names are confusing
+                    0 => self.port.crl.modify(|_,w| w.mode0().input()
+                                                    .cnf0().alt_push()),
+                    1 => self.port.crl.modify(|_,w| w.mode1().input()
+                                                    .cnf1().alt_push()),
+                    2 => self.port.crl.modify(|_,w| w.mode2().input()
+                                                    .cnf2().alt_push()),
+                    3 => self.port.crl.modify(|_,w| w.mode3().input()
+                                                    .cnf3().alt_push()),
+                    4 => self.port.crl.modify(|_,w| w.mode4().input()
+                                                    .cnf4().alt_push()),
+                    5 => self.port.crl.modify(|_,w| w.mode5().input()
+                                                    .cnf5().alt_push()),
+                    6 => self.port.crl.modify(|_,w| w.mode6().input()
+                                                    .cnf6().alt_push()),
+                    7 => self.port.crl.modify(|_,w| w.mode7().input()
+                                                    .cnf7().alt_push()),
+                    8 => self.port.crh.modify(|_,w| w.mode8().input()
+                                                    .cnf8().alt_push()),
+                    9 => self.port.crh.modify(|_,w| w.mode9().input()
+                                                    .cnf9().alt_push()),
+                    10 => self.port.crh.modify(|_,w| w.mode10().input()
+                                                    .cnf10().alt_push()),
+                    11 => self.port.crh.modify(|_,w| w.mode11().input()
+                                                    .cnf11().alt_push()),
+                    12 => self.port.crh.modify(|_,w| w.mode12().input()
+                                                    .cnf12().alt_push()),
+                    13 => self.port.crh.modify(|_,w| w.mode13().input()
+                                                    .cnf13().alt_push()),
+                    14 => self.port.crh.modify(|_,w| w.mode14().input()
+                                                    .cnf14().alt_push()),
+                    15 => self.port.crh.modify(|_,w| w.mode15().input()
+                                                    .cnf15().alt_push()),
                     _ => {},
                 },
             Mode::OUTPUT =>
