@@ -25,14 +25,14 @@ impl<'a> Pin<'a>{
             _ => {},
         }
 
-        // Configure pin 13 as output
-        // still need to set cnf bits and handle analog/digital
+        // Configure pin to input/output
+        // still need to handle analog input mode, and possibly setting output frequency
         // defaults to 10Mhz output
 
         match mode {
             Mode::INPUT =>
                 match self.pin {
-                    // cnf alt_push mode is actually input pullup, since cnf is shared 
+                    // cnf alt_push mode is actually input pullup/pulldown, since cnf is shared 
                     // for output mode the names are confusing
                     0 => self.port.crl.modify(|_,w| w.mode0().input()
                                                     .cnf0().alt_push()),
