@@ -70,22 +70,38 @@ impl<'a> Pin<'a>{
                 },
             Mode::OUTPUT =>
                 match self.pin {
-                    0 => self.port.crl.modify(|_,w| w.mode0().output()),
-                    1 => self.port.crl.modify(|_,w| w.mode1().output()),
-                    2 => self.port.crl.modify(|_,w| w.mode2().output()),
-                    3 => self.port.crl.modify(|_,w| w.mode3().output()),
-                    4 => self.port.crl.modify(|_,w| w.mode4().output()),
-                    5 => self.port.crl.modify(|_,w| w.mode5().output()),
-                    6 => self.port.crl.modify(|_,w| w.mode6().output()),
-                    7 => self.port.crl.modify(|_,w| w.mode7().output()),
-                    8 => self.port.crh.modify(|_,w| w.mode8().output()),
-                    9 => self.port.crh.modify(|_,w| w.mode9().output()),
-                    10 => self.port.crh.modify(|_,w| w.mode10().output()),
-                    11 => self.port.crh.modify(|_,w| w.mode11().output()),
-                    12 => self.port.crh.modify(|_,w| w.mode12().output()),
-                    13 => self.port.crh.modify(|_,w| w.mode13().output()),
-                    14 => self.port.crh.modify(|_,w| w.mode14().output()),
-                    15 => self.port.crh.modify(|_,w| w.mode15().output()),
+                    0 => self.port.crl.modify(|_,w| w.mode0().output()
+                                                        .cnf0().push()),
+                    1 => self.port.crl.modify(|_,w| w.mode1().output()
+                                                        .cnf1().push()),
+                    2 => self.port.crl.modify(|_,w| w.mode2().output()
+                                                        .cnf2().push()),
+                    3 => self.port.crl.modify(|_,w| w.mode3().output()
+                                                        .cnf3().push()),
+                    4 => self.port.crl.modify(|_,w| w.mode4().output()
+                                                        .cnf4().push()),
+                    5 => self.port.crl.modify(|_,w| w.mode5().output()
+                                                        .cnf5().push()),
+                    6 => self.port.crl.modify(|_,w| w.mode6().output()
+                                                        .cnf6().push()),
+                    7 => self.port.crl.modify(|_,w| w.mode7().output()
+                                                        .cnf7().push()),
+                    8 => self.port.crh.modify(|_,w| w.mode8().output()
+                                                        .cnf8().push()),
+                    9 => self.port.crh.modify(|_,w| w.mode9().output()
+                                                        .cnf9().push()),
+                    10 => self.port.crh.modify(|_,w| w.mode10().output()
+                                                        .cnf10().push()),
+                    11 => self.port.crh.modify(|_,w| w.mode11().output()
+                                                        .cnf11().push()),
+                    12 => self.port.crh.modify(|_,w| w.mode12().output()
+                                                        .cnf12().push()),
+                    13 => self.port.crh.modify(|_,w| w.mode13().output()
+                                                        .cnf13().push()),
+                    14 => self.port.crh.modify(|_,w| w.mode14().output()
+                                                        .cnf14().push()),
+                    15 => self.port.crh.modify(|_,w| w.mode15().output()
+                                                        .cnf15().push()),
                     _ => {},
                 },
         };

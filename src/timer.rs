@@ -29,7 +29,7 @@ impl<'a> Timer<'a>{
     }
 
     /// initialize timer to frequency
-    pub fn init(&self, rcc: &Rcc, frequency: u32) {
+    pub fn init(&self, rcc: &Rcc, ticks: u32) {
         // Power up peripherals
         // check which memory block this timer is pointing to
         match &*self.timer as *const _{
@@ -42,10 +42,10 @@ impl<'a> Timer<'a>{
 
         let speeds = frequency::ClockSpeeds::get(rcc);
 
-        let ratio = speeds.apb1 / frequency;
-        let psc = u16((ratio - 1) / u32(u16::MAX)).unwrap();
+        //let ratio = speeds.apb1 / frequency;
+        let psc = u16((ticks - 1) / u32(u16::MAX)).unwrap();
         self.timer.psc.write(|w| w.psc().bits(psc));
-        let arr = u16(ratio / u32(psc + 1)).unwrap();
+        let arr = u16(ticks / u32(psc + 1)).unwrap();
         self.timer.arr.write(|w| w.arr().bits(arr));
 
         self.timer.dier.write(|w| unsafe { w.uie().bits(1) });

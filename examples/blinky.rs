@@ -22,7 +22,7 @@ use bluepill::timer::{halTimer, Timer};
 use rtfm::{Local, P0, P1, T0, T1, TMax};
 
 // CONFIGURATION
-const FREQUENCY: u32 = 1; // Hz
+const TICKS: u32 = 36_000_000; // should be one a second
 
 // RESOURCES
 peripherals!(stm32f103xx, {
@@ -69,7 +69,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     input.init(&rcc, Mode::INPUT);
 
     // Configure TIM2 for periodic update events
-    timer.init(&rcc, FREQUENCY);
+    timer.init(&rcc, TICKS);
 
     // Start the timer
     timer.resume();
