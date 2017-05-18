@@ -2,6 +2,7 @@
 
 use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc};
 pub use hal::pin::Pin as halPin;
+pub use hal::pin::{State, Mode};
 
 /// GPIO pin
 pub struct Pin<'a>{
@@ -13,7 +14,7 @@ pub struct Pin<'a>{
 
 impl<'a> Pin<'a>{
     /// Initializes the Pin
-    pub fn init(&self, rcc: &Rcc) {
+    pub fn init(&self, rcc: &Rcc, mode: Mode) {
         // Power up peripherals
         // check which memory block this port is pointing to
         match &*self.port as *const _{
@@ -49,5 +50,13 @@ impl<'a> halPin for Pin<'a>{
     fn on(&self) {
         // NOTE(safe) atomic write
         unsafe { self.port.bsrr.write(|w| w.bits(1 << self.pin)) }
+    }
+
+    // return state of pin
+    fn digital_read(&self) -> State {
+        match self.port.idr.read().bits() & (1 << self.pin){
+            0 => State::LOW,
+            _ => State::HIGH
+        }
     }
 }

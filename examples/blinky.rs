@@ -14,7 +14,7 @@ extern crate cortex_m_rtfm as rtfm;
 
 extern crate bluepill;
 
-use bluepill::pin::{halPin, Pin};
+use bluepill::pin::{halPin, Pin, Mode};
 use bluepill::frequency;
 use bluepill::stm32f103xx::interrupt::Tim3;
 use bluepill::stm32f103xx;
@@ -57,7 +57,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
 
     // Configure the PEx pins as output pins
-    led.init(&rcc);
+    led.init(&rcc, Mode::OUTPUT);
 
     // Configure TIM2 for periodic update events
     timer.init(&rcc, FREQUENCY);
@@ -99,6 +99,7 @@ fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
         *state = !*state;
 
         if *state {
+            // led is inverted, this actually turns the led off
             led.on();
         } else {
             led.off();
