@@ -155,4 +155,6 @@ fn use_pll(rcc: &Rcc) {
 
     // set system clock to pll
     rcc.cfgr.modify(|_,w| w.sw().pll());
+
+    while !rcc.cfgr.read().sws().is_pll() {}
 }
