@@ -27,6 +27,7 @@ impl<'a> Pin<'a>{
 
         // Configure pin 13 as output
         // still need to set cnf bits and handle analog/digital
+        // defaults to 10Mhz output
 
         match mode {
             Mode::INPUT =>
