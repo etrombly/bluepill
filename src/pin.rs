@@ -1,9 +1,9 @@
-//! User LEDs
+//! GPIO pin
 
 use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc};
 pub use hal::pin::Pin as halPin;
 
-/// General purpose timer
+/// GPIO pin
 pub struct Pin<'a>{
     /// gpio pin
     pub pin: u8,

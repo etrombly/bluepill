@@ -1,7 +1,4 @@
 //! Periodic timer
-
-extern crate hal;
-
 use core::u16;
 
 use cast::{u16, u32};
@@ -26,6 +23,11 @@ pub struct Timer<'a>{
 }
 
 impl<'a> Timer<'a>{
+    /// return new timer
+    pub fn new(timer: &'a tim2::RegisterBlock) -> Timer {
+        Timer{timer}
+    }
+
     /// initialize timer to frequency
     pub fn init(&self, rcc: &Rcc, frequency: u32) {
         // Power up peripherals

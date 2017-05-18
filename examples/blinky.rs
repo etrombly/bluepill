@@ -50,7 +50,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     let rcc = RCC.access(priority, threshold);
     let tim3 = TIM3.access(priority, threshold);
     let flash = FLASH.access(priority, threshold);
-    let timer = Timer{timer: &**tim3};
+    let timer = Timer::new(&**tim3);
     let led = Pin{pin: 13, port: &**gpioc};
 
     // set clock to 72Mhz
