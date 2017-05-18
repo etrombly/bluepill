@@ -22,7 +22,7 @@ use bluepill::timer::{halTimer, Timer};
 use rtfm::{Local, P0, P1, T0, T1, TMax};
 
 // CONFIGURATION
-const TICKS: u32 = 900_000; // one rotation a second
+const TICKS: u32 = 400_000; 
 const ORDER:[[bool; 4]; 9] = [[false,false,false,true],
                 [false,false,true,true],
                 [false,false,true,false],
