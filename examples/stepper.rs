@@ -14,7 +14,7 @@ extern crate cortex_m_rtfm as rtfm;
 extern crate bluepill;
 extern crate haldriver;
 
-use bluepill::pin::{halPin, Pin, Mode};
+use bluepill::pin::{Pin, Mode};
 use bluepill::frequency;
 use bluepill::stm32f103xx::interrupt::Tim3;
 use bluepill::stm32f103xx;
@@ -23,7 +23,7 @@ use rtfm::{Local, P0, P1, T0, T1, TMax};
 use haldriver::stepper::ulnXXXX::{Stepper, halStepper, Direction};
 
 // CONFIGURATION
-const TICKS: u32 = 400_000; 
+const TICKS: u32 = 64_000; 
 
 // RESOURCES
 peripherals!(stm32f103xx, {
@@ -58,7 +58,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     let in4 = Pin{pin: 4, port: &**gpioa};
 
     // set clock to 72Mhz
-    frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
+    frequency::init(&rcc, &flash, frequency::Speed::S32Mhz);
 
     // configure pins for output
     in1.init(&rcc, Mode::OUTPUT);
