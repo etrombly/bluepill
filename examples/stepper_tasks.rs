@@ -25,7 +25,9 @@ use core::cell::Cell;
 
 // CONFIGURATION
 const TICKS: u32 = 64_000;
-const TICKS2: u32 = 256_000_000;
+const TICKS2: u32 = 128_000;
+
+const PATTERN: [i32; 5] = [4096, -2000, 500, -500, 200];
 
 struct stepCount {
     steps: Cell<i32>,
@@ -123,7 +125,7 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
     // Task local data
     // have to track step manually since you can't persist
     // a stepper between calls to periodic 
-    static STEP: Local<u16, Tim3> = Local::new(0);
+    static STEP: Local<u8, Tim3> = Local::new(0);
 
     let tim3 = TIM3.access(priority, threshold);
     let timer = Timer{timer: &**tim3};
@@ -148,17 +150,17 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
             stepper.step();
 
             if xsteps.steps.get() > 0 {
-                if *step < 8 {
+                if *step < 7 {
                     *step += 1;
                 } else {
                     *step = 0;
                 }
                 xsteps.steps.set(xsteps.steps.get() - 1);
-            }else{
+            } else {
                 if *step > 0 {
                     *step -= 1;
                 } else {
-                    *step = 8;
+                    *step = 7;
                 }
                 xsteps.steps.set(xsteps.steps.get() + 1);
             }
@@ -171,11 +173,14 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
 }
 
 fn controller(mut task: Tim2, ref priority: P1, ref threshold: T1) {
+    static INDEX: Local<u8, Tim2> = Local::new(0);
+
     let tim2 = TIM2.access(priority, threshold);
     let timer = Timer{timer: &**tim2};
 
 
     if timer.clear_update_flag().is_ok() {
+        let index = INDEX.borrow_mut(&mut task);
         // make sure current move is completed before sending next move
         while threshold.raise(
                 &XSTEPS, |threshold| {
@@ -186,9 +191,14 @@ fn controller(mut task: Tim2, ref priority: P1, ref threshold: T1) {
         threshold.raise(
                 &XSTEPS, |threshold| {
                     let xsteps = XSTEPS.access(priority, threshold);
-                    xsteps.steps.set(2078);
+                    xsteps.steps.set(PATTERN[*index as usize]);
                 }
         );
+        if *index < 4 {
+            *index += 1;
+        }else{
+            *index = 0;
+        }
     } else {
         // Only reachable through `rtfm::request(periodic)`
         #[cfg(debug_assertion)]

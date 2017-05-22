@@ -116,7 +116,7 @@ fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
 
         stepper.step();
 
-        if *step < 8 {
+        if *step < 7 {
             *step += 1;
         } else {
             *step = 0;
