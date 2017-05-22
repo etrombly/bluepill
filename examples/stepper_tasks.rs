@@ -25,10 +25,10 @@ use core::cell::Cell;
 
 // CONFIGURATION
 const TICKS: u32 = 64_000;
-const TICKS2: u32 = 16_000_000;
+const TICKS2: u32 = 256_000_000;
 
 struct stepCount {
-    steps: Cell<u32>,
+    steps: Cell<i32>,
 }
 
 impl stepCount {
@@ -135,7 +135,7 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
 
     if timer.clear_update_flag().is_ok() {
         let xsteps = XSTEPS.access(priority, threshold);
-        if xsteps.steps.get() > 0 {
+        if xsteps.steps.get() != 0 {
             let step = STEP.borrow_mut(&mut task);
 
             let mut stepper = Stepper{direction: Direction::RIGHT,
@@ -147,12 +147,21 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
 
             stepper.step();
 
-            if *step < 8 {
-                *step += 1;
-            } else {
-                *step = 0;
+            if xsteps.steps.get() > 0 {
+                if *step < 8 {
+                    *step += 1;
+                } else {
+                    *step = 0;
+                }
+                xsteps.steps.set(xsteps.steps.get() - 1);
+            }else{
+                if *step > 0 {
+                    *step -= 1;
+                } else {
+                    *step = 8;
+                }
+                xsteps.steps.set(xsteps.steps.get() + 1);
             }
-            xsteps.steps.set(xsteps.steps.get() - 1);
         }
     } else {
         // Only reachable through `rtfm::request(periodic)`
@@ -173,11 +182,11 @@ fn controller(mut task: Tim2, ref priority: P1, ref threshold: T1) {
                     let xsteps = XSTEPS.access(priority, threshold);
                     xsteps.steps.get()
                 }
-        ) > 0 {}
+        ) != 0 {}
         threshold.raise(
                 &XSTEPS, |threshold| {
                     let xsteps = XSTEPS.access(priority, threshold);
-                    xsteps.steps.set(100);
+                    xsteps.steps.set(2078);
                 }
         );
     } else {
