@@ -4,8 +4,6 @@ use core::u16;
 use cast::{u16, u32};
 use stm32f103xx::{Rcc, tim2, TIM2, TIM3, TIM4, TIM5};
 
-use frequency;
-
 pub use hal::timer::Timer as halTimer;
 
 /// Specialized `Result` type
@@ -40,9 +38,6 @@ impl<'a> Timer<'a>{
             _ => {},
         }
 
-        let speeds = frequency::ClockSpeeds::get(rcc);
-
-        //let ratio = speeds.apb1 / frequency;
         let psc = u16((ticks - 1) / u32(u16::MAX)).unwrap();
         self.timer.psc.write(|w| w.psc().bits(psc));
         let arr = u16(ticks / u32(psc + 1)).unwrap();
