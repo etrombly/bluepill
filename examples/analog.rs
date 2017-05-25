@@ -62,7 +62,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
 
     // Configure the PEx pins as output pins
-    led.init(&rcc, Mode::OUTPUT);
+    led.init(&rcc, Mode::ANALOG_OUTPUT);
 
     // Configure TIM2 for periodic update events
     timer2.init(&rcc, TICKS);

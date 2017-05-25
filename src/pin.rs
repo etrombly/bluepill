@@ -155,12 +155,17 @@ impl<'a> Pin<'a>{
 
                     // set update generation bit
                     timer.egr.write(|w| unsafe{ w.ug().bits(1) });
-                    
+
                     //enable timer
                     timer.dier.write(|w| unsafe { w.uie().bits(1) });
                     timer.cr1.write(|w| unsafe { w.opm().continuous()
                                             .cen().enabled()
                                             .arpe().bits(1)});
+                                let cnt = timer.cnt.read();
+            let psc = timer.psc.read();
+            let arr = timer.arr.read();
+            let ccr = timer.ccr4.read();
+            let ccr = timer.ccr4.read();
                 }
                 // Valid pins are PA0,1,2,3 on timer 2
                 //                PA6,7 PB0,1 on timer 3
