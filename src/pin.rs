@@ -127,16 +127,12 @@ impl<'a> Pin<'a>{
                 },
             Mode::ANALOG_OUTPUT => {
                 if let Some(timer) = self.timer {
-                    //arbitrarily setting ticks to 100 for now
-                    let ticks = 100;
-
-                    // set prescaler
-                    let psc = u16((ticks - 1) / u32(u16::MAX)).unwrap();
-                    timer.psc.write(|w| w.psc().bits(psc));
+                    // using arbitrary values for testing now, will figure out good defaults later
+                    // should be roughly 1hz
+                    timer.psc.write(|w| w.psc().bits(6000));
 
                     // set frequency
-                    let arr = u16(ticks / u32(psc + 1)).unwrap();
-                    timer.arr.write(|w| w.arr().bits(50));
+                    timer.arr.write(|w| w.arr().bits(12000));
 
                     //set duty cycle
                     timer.ccr4.write(|w| unsafe{ w.ccr4().bits(0)} );

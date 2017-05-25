@@ -108,7 +108,9 @@ fn periodic(mut task: Tim2, ref priority: P1, ref threshold: T1) {
             // led is inverted, this actually turns the led off
             led.analog_write(0);
         } else {
-            led.analog_write(50);
+            // arr is 12_000 for testing, should be 50% duty cycle
+            // will make this a percentage or something later
+            led.analog_write(6000);
         }
     } else {
         // Only reachable through `rtfm::request(periodic)`
