@@ -13,9 +13,10 @@ cortex-m = "0.2.4"
 cortex-m-rt = "0.2.0"
 cortex-m-rtfm = "0.1.0"
 stm32f103xx = { git = "https://github.com/etrombly/stm32f103xx" }
-hal = { git = "https://github.com/etrombly/hal" }
-haldriver = { git = "https://github.com/etrombly/haldriver" }
-#haldriver = { path = "../haldriver" }
+#hal = { git = "https://github.com/etrombly/hal" }
+#haldriver = { git = "https://github.com/etrombly/haldriver" }
+hal = { path = "../hal" }
+haldriver = { path = "../haldriver" }
 
 [dependencies.cast]
 default-features = false

@@ -91,14 +91,14 @@ fn init(ref priority: P0, threshold: &TMax) {
     let timer = Timer::new(&**tim3);
     let timer2 = Timer::new(&**tim2);
     // stepper pins
-    let in1 = Pin{pin: 1, port: &**gpioa};
-    let in2 = Pin{pin: 2, port: &**gpioa};
-    let in3 = Pin{pin: 3, port: &**gpioa};
-    let in4 = Pin{pin: 4, port: &**gpioa};
-    let in5 = Pin{pin: 8, port: &**gpioa};
-    let in6 = Pin{pin: 9, port: &**gpioa};
-    let in7 = Pin{pin: 10, port: &**gpioa};
-    let in8 = Pin{pin: 11, port: &**gpioa};
+    let in1 = Pin::new(1, &**gpioa);
+    let in2 = Pin::new(2, &**gpioa);
+    let in3 = Pin::new(3, &**gpioa);
+    let in4 = Pin::new(4, &**gpioa);
+    let in5 = Pin::new(8, &**gpioa);
+    let in6 = Pin::new(9, &**gpioa);
+    let in7 = Pin::new(10, &**gpioa);
+    let in8 = Pin::new(11, &**gpioa);
 
     // set clock to 32Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S32Mhz);
@@ -156,14 +156,14 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
     let tim3 = TIM3.access(priority, threshold);
     let timer = Timer{timer: &**tim3};
     let gpioa = GPIOA.access(priority, threshold);
-    let in1 = Pin{pin: 1, port: &**gpioa};
-    let in2 = Pin{pin: 2, port: &**gpioa};
-    let in3 = Pin{pin: 3, port: &**gpioa};
-    let in4 = Pin{pin: 4, port: &**gpioa};
-    let in5 = Pin{pin: 8, port: &**gpioa};
-    let in6 = Pin{pin: 9, port: &**gpioa};
-    let in7 = Pin{pin: 10, port: &**gpioa};
-    let in8 = Pin{pin: 11, port: &**gpioa};
+    let in1 = Pin::new(1, &**gpioa);
+    let in2 = Pin::new(2, &**gpioa);
+    let in3 = Pin::new(3, &**gpioa);
+    let in4 = Pin::new(4, &**gpioa);
+    let in5 = Pin::new(8, &**gpioa);
+    let in6 = Pin::new(9, &**gpioa);
+    let in7 = Pin::new(10, &**gpioa);
+    let in8 = Pin::new(11, &**gpioa);
 
     if timer.clear_update_flag().is_ok() {
         let xsteps = XSTEPS.access(priority, threshold);
