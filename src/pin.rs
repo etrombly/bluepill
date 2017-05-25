@@ -3,7 +3,7 @@ use core::u16;
 
 use cast::{u16, u32};
 
-use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc, adc1, tim2};
+use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc, adc1, tim2, TIM2, TIM3, TIM4, TIM5};
 pub use hal::pin::Pin as halPin;
 pub use hal::pin::{State, Mode};
 
@@ -127,6 +127,13 @@ impl<'a> Pin<'a>{
                 },
             Mode::ANALOG_OUTPUT => {
                 if let Some(timer) = self.timer {
+                    match &*timer as *const _{
+                        x if x == TIM2.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim2en().enabled()),
+                        x if x == TIM3.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim3en().enabled()),
+                        x if x == TIM4.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim4en().enabled()),
+                        x if x == TIM5.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim5en().enabled()),
+                        _ => {},
+                    }
                     // using arbitrary values for testing now, will figure out good defaults later
                     // should be roughly 1hz
                     timer.psc.write(|w| w.psc().bits(6000));
@@ -139,15 +146,21 @@ impl<'a> Pin<'a>{
 
                     //enable pwm mode on timer
                     //timer.ccmr1.modify(|_,w| w.oc1m().pwm1());
-                    unsafe{ timer.ccmr2_output.modify(|_,w| w.oc4m().bits(6)) };
+                    unsafe{ timer.ccmr2_output.modify(|_,w| w.oc4m().bits(6)
+                                                            .oc4pe().bits(1)) };
 
                     // enable output, high polarity
                     timer.ccer.modify(|_, w| unsafe{ w.cc4e().bits(1)
                                                .cc4p().bits(0)});
 
+                    // set update generation bit
+                    timer.egr.write(|w| unsafe{ w.ug().bits(1) });
+                    
                     //enable timer
                     timer.dier.write(|w| unsafe { w.uie().bits(1) });
-                    timer.cr1.write(|w| w.opm().continuous());
+                    timer.cr1.write(|w| unsafe { w.opm().continuous()
+                                            .cen().enabled()
+                                            .arpe().bits(1)});
                 }
                 // Valid pins are PA0,1,2,3 on timer 2
                 //                PA6,7 PB0,1 on timer 3
