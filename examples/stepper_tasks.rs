@@ -23,15 +23,25 @@ use rtfm::{Local, Resource, C2, P0, P1, P2, T0, T1, T2, TMax};
 use haldriver::stepper::ulnXXXX::{Stepper, halStepper, Direction};
 use core::cell::Cell;
 
-// stepper update ticks, maybe be able to go faster on 5V
-const TICKS: u32 = 64_000;
+// stepper update ticks, 500 pulse/sec is around the max
+const TICKS: u32 = 144_000;
 // controller update ticks still need to tweak for a good value
-const TICKS2: u32 = 128_000;
+const TICKS2: u32 = 1_000_000;
 
 // XPATTERN and YPATTERN are the path for the x and y axis
 const XPATTERN: [i32; 5] = [4096, -2000, 500, -500, 200];
 const YPATTERN: [i32; 5] = [1000, -2000, 1500, -500, 200];
 
+fn gcd(x: i32, y: i32) -> i32 {
+    let mut x = x;
+    let mut y = y;
+    while y != 0 {
+        let t = y;
+        y = x % y;
+        x = t;
+    }
+    x
+}
 
 struct stepCount {
     steps: Cell<i32>,
@@ -221,42 +231,52 @@ fn controller(mut task: Tim2, ref priority: P1, ref threshold: T1) {
 
 
     if timer.clear_update_flag().is_ok() {
-
-        // make sure current move is completed before sending next move
-        // blocks on both x and y
-        while threshold.raise(
-                &XSTEPS, |threshold| {
-                    let xsteps = XSTEPS.access(priority, threshold);
-                    xsteps.steps.get()
-                }
-        ) != 0 {}
-        while threshold.raise(
-                &YSTEPS, |threshold| {
-                    let ysteps = YSTEPS.access(priority, threshold);
-                    ysteps.steps.get()
-                }
-        ) != 0 {}
-        {
-            // send the next x move, currently x and y are the same length
-            // need to add checks when this becomes more dynamic
-            let xindex = XINDEX.borrow_mut(&mut task);
+        // get current movement
+        let xmove = XPATTERN[*XINDEX.borrow(&task) as usize];
+        let ymove = YPATTERN[*YINDEX.borrow(&task) as usize];
+        
+        // figure out step size
+        // probably need to add a check if either are 0
+        let gcd = gcd(xmove, ymove);
+        let xmove = xmove / gcd;
+        let ymove = ymove / gcd;
+        for _ in 0..gcd{
+            // make sure current move is completed before sending next move
+            // blocks on both x and y
+            while threshold.raise(
+                    &XSTEPS, |threshold| {
+                        let xsteps = XSTEPS.access(priority, threshold);
+                        xsteps.steps.get()
+                    }
+            ) != 0 {}
+            while threshold.raise(
+                    &YSTEPS, |threshold| {
+                        let ysteps = YSTEPS.access(priority, threshold);
+                        ysteps.steps.get()
+                    }
+            ) != 0 {}
+            // send the next x move
             threshold.raise(
                 &XSTEPS, |threshold| {
                     let xsteps = XSTEPS.access(priority, threshold);
-                    xsteps.steps.set(XPATTERN[*xindex as usize]);
+                    xsteps.steps.set(xmove);
                 }
             );
+            // send the next y move
+            threshold.raise(
+                &YSTEPS, |threshold| {
+                    let ysteps = YSTEPS.access(priority, threshold);
+                    ysteps.steps.set(ymove);
+                }
+            );
+        }
+        // need to get mutable x index in it's own block due
+        // to borrow checker being overly strick with borrow_mut
+        {
+            let xindex = XINDEX.borrow_mut(&mut task);
             *xindex = if *xindex < XPATTERN.len() as u8 - 1 { *xindex + 1 } else { 0 };
         }
-        // send the next y move, currently x and y are the same length
-        // need to add checks when this becomes more dynamic
         let yindex = YINDEX.borrow_mut(&mut task);
-        threshold.raise(
-            &YSTEPS, |threshold| {
-                let ysteps = YSTEPS.access(priority, threshold);
-                ysteps.steps.set(YPATTERN[*yindex as usize]);
-            }
-        );
         *yindex = if *yindex < YPATTERN.len() as u8 - 1 { *yindex + 1 } else { 0 };
     } else {
         // Only reachable through `rtfm::request(periodic)`
