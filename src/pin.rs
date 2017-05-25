@@ -135,11 +135,10 @@ impl<'a> Pin<'a>{
                         _ => {},
                     }
                     // using arbitrary values for testing now, will figure out good defaults later
-                    // should be roughly 1hz
-                    timer.psc.write(|w| w.psc().bits(6000));
+                    timer.psc.write(|w| w.psc().bits(1000));
 
                     // set frequency
-                    timer.arr.write(|w| w.arr().bits(12000));
+                    timer.arr.write(|w| w.arr().bits(1000));
 
                     //set duty cycle
                     timer.ccr4.write(|w| unsafe{ w.ccr4().bits(0)} );
