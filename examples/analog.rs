@@ -22,7 +22,7 @@ use bluepill::timer::{halTimer, Timer};
 use rtfm::{Local, P0, P1, T0, T1, TMax};
 
 // CONFIGURATION
-const TICKS: u32 = 36_000_000; // should be one a second
+const TICKS: u32 = 360_000; 
 
 // RESOURCES
 peripherals!(stm32f103xx, {
@@ -90,9 +90,7 @@ tasks!(stm32f103xx, {
 
 fn periodic(mut task: Tim2, ref priority: P1, ref threshold: T1) {
     // Task local data
-    static STATE: Local<bool, Tim2> = Local::new(false);
     static DUTY: Local<u16, Tim2> = Local::new(1000);
-
 
     let tim2 = TIM2.access(priority, threshold);
     let timer2 = Timer{timer: &**tim2};
@@ -101,23 +99,14 @@ fn periodic(mut task: Tim2, ref priority: P1, ref threshold: T1) {
     let led = Pin::new_analog_out(1, &**gpiob, &**tim3);
 
     if timer2.clear_update_flag().is_ok() {
-        //let state = STATE.borrow_mut(&mut task);
-
-        //*state = !*state;
-
-        //if *state {
-            // led is inverted, this actually turns the led off
-        //    led.analog_write(0);
-        //} else {
-            // arr is 12_000 for testing, should be 50% duty cycle
-            // will make this a percentage or something later
+            // arr is 1_440 for testing, this will cycle in increments of 10
             let duty = DUTY.borrow_mut(&mut task);
             led.analog_write(*duty);
-            *duty -= 10;
+            *duty = if *duty > 0 { *duty - 10 } else { 1440 };
         //}
     } else {
         // Only reachable through `rtfm::request(periodic)`
-        //#[cfg(debug_assertion)]
-        //unreachable!()
+        #[cfg(debug_assertion)]
+        unreachable!()
     }
 }

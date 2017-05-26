@@ -134,42 +134,83 @@ impl<'a> Pin<'a>{
                         x if x == TIM5.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim5en().enabled()),
                         _ => {},
                     }
-                    // using arbitrary values for testing now, will figure out good defaults later
-                    timer.psc.write(|w| w.psc().bits(1000));
+                    // test values:
+                    // CLOCK = 72_000_000
+                    // OUTPUT FREQ = 50_000
+                    // PSC = (CLOCK / FREQ) / u16::MAX
+                    // PSC = (72_000_000 / 50_000) / 65_535 = less than 1
+                    // ARR = ((CLOCK / FREQ) + (PSC / 2)) / PSC
+                    // ARR = ((72_000_000 / 50_000) + ( 1 / 2)) / 1 = 1440
+                    timer.psc.write(|w| w.psc().bits(1));
 
                     // set frequency
-                    timer.arr.write(|w| w.arr().bits(1000));
+                    timer.arr.write(|w| w.arr().bits(1440));
 
-                    //set duty cycle
-                    timer.ccr4.write(|w| unsafe{ w.ccr4().bits(0)} );
+                    // Valid pins are PA 8, 9, 10, 11  timer 1
+                    //                PA 0, 1, 2, 3    timer 2
+                    //                PA 6, 7 PB 0, 1  timer 3
+                    //                PB 6, 7, 8, 9    timer 4            
 
-                    //enable pwm mode on timer
-                    //timer.ccmr1.modify(|_,w| w.oc1m().pwm1());
-                    unsafe{ timer.ccmr2_output.modify(|_,w| w.oc4m().bits(6)
-                                                            .oc4pe().bits(1)) };
-
-                    // enable output, high polarity
-                    timer.ccer.modify(|_, w| unsafe{ w.cc4e().bits(1)
-                                               .cc4p().bits(0)});
+                    // ocXm = pwm1 mode
+                    // ocXpe = preload enable
+                    // ccXe = output enable
+                    // ccXp = active high
+                    match &*self.port as *const _{
+                        x if x == GPIOA.get() as *const _ => {
+                            match self.pin {
+                                0 | 6 | 8 => { timer.ccmr1_output.modify(|_,w| unsafe{ w.oc1m().bits(0b110)
+                                                                                        .oc1pe().bits(1) });
+                                               timer.ccer.modify(|_, w| unsafe{ w.cc1e().bits(1)
+                                                                                 .cc1p().bits(0) }); },
+                                1 | 7 | 9 => { timer.ccmr1_output.modify(|_,w| unsafe{ w.oc2m().bits(0b110)
+                                                                                        .oc2pe().bits(1) });
+                                               timer.ccer.modify(|_, w| unsafe{ w.cc2e().bits(1)
+                                                                                 .cc2p().bits(0) }); },
+                                2 | 10 => {    timer.ccmr2_output.modify(|_,w| unsafe{ w.oc3m().bits(0b110)
+                                                                                        .oc3pe().bits(1) });
+                                               timer.ccer.modify(|_, w| unsafe{ w.cc3e().bits(1)
+                                                                                 .cc3p().bits(0) }); },
+                                3 | 11 => {    timer.ccmr2_output.modify(|_,w| unsafe{ w.oc4m().bits(0b110)
+                                                                                        .oc4pe().bits(1) });
+                                               timer.ccer.modify(|_, w| unsafe{ w.cc4e().bits(1)
+                                                                                 .cc4p().bits(0) }); },
+                                _ => {},
+                            }
+                        },
+                        x if x == GPIOB.get() as *const _ => {
+                            match self.pin {
+                                6 => {     timer.ccmr1_output.modify(|_,w| unsafe{ w.oc1m().bits(0b110)
+                                                                                    .oc1pe().bits(1) });
+                                           timer.ccer.modify(|_, w| unsafe{ w.cc1e().bits(1)
+                                                                             .cc1p().bits(0) }); },
+                                7 => {     timer.ccmr1_output.modify(|_,w| unsafe{ w.oc2m().bits(0b110)
+                                                                                    .oc2pe().bits(1) });
+                                           timer.ccer.modify(|_, w| unsafe{ w.cc2e().bits(1)
+                                                                             .cc2p().bits(0) }); },
+                                0 | 8 => { timer.ccmr2_output.modify(|_,w| unsafe{ w.oc3m().bits(0b110)
+                                                                                    .oc3pe().bits(1) });
+                                           timer.ccer.modify(|_, w| unsafe{ w.cc3e().bits(1)
+                                                                             .cc3p().bits(0) }); },
+                                1 | 9 => { timer.ccmr2_output.modify(|_,w| unsafe{ w.oc4m().bits(0b110)
+                                                                                    .oc4pe().bits(1) });
+                                           timer.ccer.modify(|_, w| unsafe{ w.cc4e().bits(1)
+                                                                             .cc4p().bits(0) }); },
+                                _ => {},
+                            }
+                        },
+                        _ => {},
+                    }
 
                     // set update generation bit
                     timer.egr.write(|w| unsafe{ w.ug().bits(1) });
 
                     //enable timer
-                    timer.dier.write(|w| unsafe { w.uie().bits(1) });
-                    timer.cr1.write(|w| unsafe { w.opm().continuous()
+                    timer.dier.modify(|_, w| unsafe { w.uie().bits(1) });
+                    timer.cr1.modify(|_, w| unsafe { w.opm().continuous()
                                             .cen().enabled()
-                                            .arpe().bits(1)});
-                                let cnt = timer.cnt.read();
-            let psc = timer.psc.read();
-            let arr = timer.arr.read();
-            let ccr = timer.ccr4.read();
-            let ccr = timer.ccr4.read();
+                                            .arpe().bits(1) });
                 }
-                // Valid pins are PA0,1,2,3 on timer 2
-                //                PA6,7 PB0,1 on timer 3
-                //                PB6,7,8,9 on timer 4
-                //                PA8,9,10 on timer 1
+
                 match self.pin {
                     0 => self.port.crl.modify(|_,w| w.mode0().output50()
                                                         .cnf0().alt_push()),
@@ -179,10 +220,6 @@ impl<'a> Pin<'a>{
                                                         .cnf2().alt_push()),
                     3 => self.port.crl.modify(|_,w| w.mode3().output50()
                                                         .cnf3().alt_push()),
-                    4 => self.port.crl.modify(|_,w| w.mode4().output50()
-                                                        .cnf4().alt_push()),
-                    5 => self.port.crl.modify(|_,w| w.mode5().output50()
-                                                        .cnf5().alt_push()),
                     6 => self.port.crl.modify(|_,w| w.mode6().output50()
                                                         .cnf6().alt_push()),
                     7 => self.port.crl.modify(|_,w| w.mode7().output50()
@@ -195,14 +232,6 @@ impl<'a> Pin<'a>{
                                                         .cnf10().alt_push()),
                     11 => self.port.crh.modify(|_,w| w.mode11().output50()
                                                         .cnf11().alt_push()),
-                    12 => self.port.crh.modify(|_,w| w.mode12().output50()
-                                                        .cnf12().alt_push()),
-                    13 => self.port.crh.modify(|_,w| w.mode13().output50()
-                                                        .cnf13().alt_push()),
-                    14 => self.port.crh.modify(|_,w| w.mode14().output50()
-                                                        .cnf14().alt_push()),
-                    15 => self.port.crh.modify(|_,w| w.mode15().output50()
-                                                        .cnf15().alt_push()),
                     _ => {},
                 }
             },
