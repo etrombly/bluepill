@@ -56,13 +56,13 @@ fn init(ref priority: P0, threshold: &TMax) {
     let tim3 = TIM3.access(priority, threshold);
     let flash = FLASH.access(priority, threshold);
     let timer2 = Timer::new(&**tim2);
-    let led = Pin::new_analog_out(1, &**gpiob, &**tim3);
+    let led = Pin::new_pwm_out(1, &**gpiob, &**tim3);
 
     // set clock to 72Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
 
     // Configure the PEx pins as output pins
-    led.init(&rcc, Mode::ANALOG_OUTPUT);
+    led.init(&rcc, Mode::PWM_OUTPUT);
 
     // Configure TIM2 for periodic update events
     timer2.init(&rcc, TICKS);
@@ -90,19 +90,19 @@ tasks!(stm32f103xx, {
 
 fn periodic(mut task: Tim2, ref priority: P1, ref threshold: T1) {
     // Task local data
-    static DUTY: Local<u16, Tim2> = Local::new(1000);
+    static DUTY: Local<u8, Tim2> = Local::new(255);
 
     let tim2 = TIM2.access(priority, threshold);
     let timer2 = Timer{timer: &**tim2};
     let tim3 = TIM3.access(priority, threshold);
     let gpiob = GPIOB.access(priority, threshold);
-    let led = Pin::new_analog_out(1, &**gpiob, &**tim3);
+    let led = Pin::new_pwm_out(1, &**gpiob, &**tim3);
 
     if timer2.clear_update_flag().is_ok() {
-            // arr is 1_440 for testing, this will cycle in increments of 10
+            // cycle through duty cycle
             let duty = DUTY.borrow_mut(&mut task);
-            led.analog_write(*duty);
-            *duty = if *duty > 0 { *duty - 10 } else { 1440 };
+            led.pwm_write(*duty);
+            *duty = if *duty > 0 { *duty - 1 } else { 255 };
         //}
     } else {
         // Only reachable through `rtfm::request(periodic)`

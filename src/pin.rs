@@ -1,11 +1,13 @@
 //! GPIO pin
+
 use core::u16;
 
 use cast::{u16, u32};
 
-use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc, adc1, tim2, TIM2, TIM3, TIM4, TIM5};
+use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc, rcc, adc1, tim2, TIM2, TIM3, TIM4, TIM5};
 pub use hal::pin::Pin as halPin;
 pub use hal::pin::{State, Mode};
+use ::frequency;
 
 /// GPIO pin
 pub struct Pin<'a>{
@@ -29,7 +31,7 @@ impl<'a> Pin<'a>{
     }
 
     /// returns an analog output pin
-    pub fn new_analog_out(pin: u8, port: &'a gpioa::RegisterBlock, timer: &'a tim2::RegisterBlock) -> Pin<'a> {
+    pub fn new_pwm_out(pin: u8, port: &'a gpioa::RegisterBlock, timer: &'a tim2::RegisterBlock) -> Pin<'a> {
         Pin{pin, port, adc: None, timer: Some(timer)}
     }
 
@@ -125,7 +127,7 @@ impl<'a> Pin<'a>{
                                                         .cnf15().push()),
                     _ => {},
                 },
-            Mode::ANALOG_OUTPUT => {
+            Mode::PWM_OUTPUT => {
                 if let Some(timer) = self.timer {
                     match &*timer as *const _{
                         x if x == TIM2.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim2en().enabled()),
@@ -134,17 +136,25 @@ impl<'a> Pin<'a>{
                         x if x == TIM5.get() as *const _ => rcc.apb1enr.modify(|_, w| w.tim5en().enabled()),
                         _ => {},
                     }
-                    // test values:
-                    // CLOCK = 72_000_000
-                    // OUTPUT FREQ = 50_000
+
                     // PSC = (CLOCK / FREQ) / u16::MAX
-                    // PSC = (72_000_000 / 50_000) / 65_535 = less than 1
                     // ARR = ((CLOCK / FREQ) + (PSC / 2)) / PSC
-                    // ARR = ((72_000_000 / 50_000) + ( 1 / 2)) / 1 = 1440
-                    timer.psc.write(|w| w.psc().bits(1));
+
+                    // if ppre1 is anything other than 1 the timer clock is multiplied by 2
+                    let apb1_pre = rcc.cfgr.read().ppre1();
+                    let apb1_mult = if apb1_pre == rcc::cfgr::Ppre1R::Div1 { 1 } else { 2 };
+
+                    let speeds = frequency::ClockSpeeds::get(rcc);
+
+                    // use 100Khz for default speed
+                    let psc = ((speeds.apb1 * apb1_mult) / 100_000) as u16 / u16::MAX + 1;
+
+                    timer.psc.write(|w| w.psc().bits(psc));
+
+                    let arr = ((speeds.apb1 * apb1_mult) / 100_000) as u16 + (psc / 2) / psc;
 
                     // set frequency
-                    timer.arr.write(|w| w.arr().bits(1440));
+                    timer.arr.write(|w| w.arr().bits(arr));
 
                     // Valid pins are PA 8, 9, 10, 11  timer 1
                     //                PA 0, 1, 2, 3    timer 2
@@ -264,9 +274,17 @@ impl<'a> halPin<u16> for Pin<'a>{
         1
     }
 
-    fn analog_write(&self, duty_cycle: u16){
+    fn pwm_write(&self, duty_cycle: u8){
         if let Some(timer) = self.timer {
-            timer.ccr4.write(|w| unsafe{ w.ccr4().bits(duty_cycle) });;
+            let value = if duty_cycle == 0 {
+                0
+            } else {
+                let arr = timer.arr.read().bits();
+                let duty_cycle = (u32(duty_cycle) * 100) / 255;
+                let tmp = (arr * duty_cycle) / 100;
+                u16(tmp).unwrap()
+            };
+            timer.ccr4.write(|w| unsafe{ w.ccr4().bits(value) });;
         }
     }
 }
