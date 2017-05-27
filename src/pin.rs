@@ -1,9 +1,4 @@
 //! GPIO pin
-
-use core::u16;
-
-use cast::{u16, u32};
-
 use stm32f103xx::{GPIOA, GPIOB, GPIOC, GPIOD, gpioa, Rcc, rcc, adc1, tim2, TIM2, TIM3, TIM4, TIM5};
 pub use hal::pin::Pin as halPin;
 pub use hal::pin::{State, Mode};
@@ -147,7 +142,7 @@ impl<'a> Pin<'a>{
                     let speeds = frequency::ClockSpeeds::get(rcc);
 
                     // use 100Khz for default speed
-                    let psc = ((speeds.apb1 * apb1_mult) / 100_000) as u16 / u16::MAX + 1;
+                    let psc = ((speeds.apb1 * apb1_mult) / 100_000) as u16 / 0xFFFF + 1;
 
                     timer.psc.write(|w| w.psc().bits(psc));
 
@@ -280,9 +275,8 @@ impl<'a> halPin<u16> for Pin<'a>{
                 0
             } else {
                 let arr = timer.arr.read().bits();
-                let duty_cycle = (u32(duty_cycle) * 100) / 255;
-                let tmp = (arr * duty_cycle) / 100;
-                u16(tmp).unwrap()
+                let duty_cycle = (duty_cycle as u32 * 100) / 255;
+                ((arr * duty_cycle) / 100) as u16
             };
             timer.ccr4.write(|w| unsafe{ w.ccr4().bits(value) });;
         }
