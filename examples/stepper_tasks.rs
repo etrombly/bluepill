@@ -182,10 +182,10 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
 
             // take one xstep
             if xsteps.steps.get() > 0 {
-                *xindex = if *xindex < 7 { *xindex + 1 } else { 0 };
+                *xindex = if *xindex < 3 { *xindex + 1 } else { 0 };
                 xsteps.steps.set(xsteps.steps.get() - 1);
             } else {
-                *xindex = if *xindex > 0 { *xindex - 1 } else { 7 };
+                *xindex = if *xindex > 0 { *xindex - 1 } else { 3 };
                 xsteps.steps.set(xsteps.steps.get() + 1);
             }
         }
@@ -206,10 +206,10 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
 
             // take one ystep
             if ysteps.steps.get() > 0 {
-                *yindex = if *yindex < 7 { *yindex + 1 } else { 0 };
+                *yindex = if *yindex < 3 { *yindex + 1 } else { 0 };
                 ysteps.steps.set(ysteps.steps.get() - 1);
             } else {
-                *yindex = if *yindex > 0 { *yindex -1 } else { 7 };
+                *yindex = if *yindex > 0 { *yindex -1 } else { 3 };
                 ysteps.steps.set(ysteps.steps.get() + 1);
             }
         }
