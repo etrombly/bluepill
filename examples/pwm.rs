@@ -1,5 +1,5 @@
-// examples/blinky.rs
-//! Blinks an LED
+// examples/pwm.rs
+//! Fades led brightness
 
 #![feature(const_fn)]
 #![feature(used)]
@@ -61,7 +61,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     // set clock to 72Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S72Mhz);
 
-    // Configure the PEx pins as output pins
+    // Configure the PB1 pin as pwm output
     led.init(&rcc, Mode::PWM_OUTPUT);
 
     // Configure TIM2 for periodic update events

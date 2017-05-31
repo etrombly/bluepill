@@ -7,13 +7,11 @@ main() {
     local examples=(
         hello
         itm
-        led
         blinky
-        roulette
         loopback
-        concurrency
-        resource
-        preemption
+        pwm
+        stepper_tasks
+        stepper
     )
 
     rm -rf src/examples

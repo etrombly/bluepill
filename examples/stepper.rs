@@ -1,5 +1,5 @@
-// examples/blinky.rs
-//! Blinks an LED
+// examples/stepper.rs
+//! spin stepper motor
 
 #![feature(const_fn)]
 #![feature(used)]

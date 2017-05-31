@@ -1,5 +1,5 @@
-// examples/blinky.rs
-//! Blinks an LED
+// examples/stepper_tasks.rs
+//! move x and y axis stepper motors with seperate controller task
 
 #![feature(const_fn)]
 #![feature(used)]
