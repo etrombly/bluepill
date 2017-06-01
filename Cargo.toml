@@ -20,5 +20,5 @@ haldriver = { git = "https://github.com/etrombly/haldriver" }
 default-features = false
 version = "0.2.0"
 
-#[profile.release]
-#lto = true
+[profile.release]
+lto = true

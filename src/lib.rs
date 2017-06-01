@@ -32,5 +32,6 @@ pub mod led;
 pub mod timer;
 pub mod clock;
 pub mod pin;
+pub mod serial;
 
 pub mod frequency;
