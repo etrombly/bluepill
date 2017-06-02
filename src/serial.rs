@@ -32,36 +32,38 @@ impl<'a> Serial<'a> {
     /// Initializes the serial interface with a baud rate of `baut_rate` bits
     /// per second
     pub fn init(self, port: &'a gpioa::RegisterBlock, rcc: &Rcc, baud_rate: u32) {
+        match &*port as *const _{
+            x if x == GPIOA.get() as *const _ => rcc.apb2enr.modify(|_, w| w.iopaen().enabled()),
+            x if x == GPIOB.get() as *const _ => rcc.apb2enr.modify(|_, w| w.iopben().enabled()),
+            _ => {},
+        }
+
+        rcc.apb2enr.modify(|_, w| w.afioen().enabled());
+
         // Power up peripherals
         // check which memory block this port is pointing to
         match &*self.usart as *const _{
             x if x == USART1.get() as *const _ => {
                 rcc.apb2enr.modify(|_, w| w.usart1en().enabled());
-                port.crh.modify(|_, w| w.mode9().output()
+                port.crh.modify(|_, w| w.mode9().output50()
                                         .cnf9().alt_push()
                                         .mode10().input()
-                                        .cnf10().alt_push());
+                                        .cnf10().open());
             },
             x if x == USART2.get() as *const _ => {
                 rcc.apb1enr.modify(|_, w| w.usart2en().enabled());
-                port.crl.modify(|_, w| w.mode2().output()
+                port.crl.modify(|_, w| w.mode2().output50()
                                         .cnf2().alt_push()
                                         .mode3().input()
-                                        .cnf3().alt_push());
+                                        .cnf3().open());
             },
             x if x == USART3.get() as *const _ => {
                 rcc.apb1enr.modify(|_, w| w.usart3en().enabled());
-                port.crh.modify(|_, w| w.mode10().output()
+                port.crh.modify(|_, w| w.mode10().output50()
                                         .cnf10().alt_push()
                                         .mode11().input()
-                                        .cnf11().alt_push());
+                                        .cnf11().open());
             },
-            _ => {},
-        }
-
-        match &*port as *const _{
-            x if x == GPIOA.get() as *const _ => rcc.apb2enr.modify(|_, w| w.iopaen().enabled()),
-            x if x == GPIOB.get() as *const _ => rcc.apb2enr.modify(|_, w| w.iopben().enabled()),
             _ => {},
         }
 
