@@ -9,6 +9,7 @@ main() {
         itm
         blinky
         loopback
+        buffered_serial
         pwm
         stepper_tasks
         stepper

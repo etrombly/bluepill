@@ -1,4 +1,4 @@
-//! Serial interface loopback
+//! Serial interface buffered loopback
 //!
 //! ```
 //! 
@@ -14,14 +14,29 @@
 //! extern crate cortex_m_rtfm as rtfm;
 //! 
 //! extern crate bluepill;
+//! extern crate heapless;
 //! 
 //! use bluepill::serial::Serial;
 //! use bluepill::stm32f103xx::interrupt::Usart3;
 //! use bluepill::stm32f103xx;
-//! use rtfm::{P0, P1, T0, T1, TMax};
+//! use rtfm::{Resource, P0, P1, T0, T1, TMax, C1};
+//! use core::cell::RefCell;
+//! use heapless::Vec;
 //! 
 //! // CONFIGURATION
 //! pub const BAUD_RATE: u32 = 115_200; // bits per second
+//! 
+//! struct Buffer {
+//!     buff: RefCell<Vec<u8, [u8; 20]>>,
+//! }
+//! 
+//! impl Buffer {
+//!     const fn new() -> Self {
+//!         Buffer {buff: RefCell::new(Vec::new([0; 20]))}
+//!     }
+//! }
+//! 
+//! static RXQ: Resource<Buffer, C1> = Resource::new(Buffer::new());
 //! 
 //! // RESOURCES
 //! peripherals!(stm32f103xx, {
@@ -68,16 +83,27 @@
 //! });
 //! 
 //! // Send back the received byte
-//! fn loopback(_task: Usart3, ref priority: P1, ref threshold: T1) {
+//! fn loopback(mut _task: Usart3, ref priority: P1, ref threshold: T1) {
+//!     let rxq = RXQ.access(priority, threshold);
+//!     let mut buff = rxq.buff.borrow_mut();
+//! 
 //!     let usart3 = USART3.access(priority, threshold);
 //!     let serial = Serial{usart: &**usart3};
 //! 
 //!     if let Some(byte) = serial.read() {
-//!         if serial.write(byte).is_err() {
-//!             // As we are echoing the bytes as soon as they arrive, it should
-//!             // be impossible to have a TX buffer overrun
-//!             #[cfg(debug_assertions)]
-//!             unreachable!()
+//!         if buff.push(byte).is_err() {
+//!                 // error: buffer full
+//!                 // KISS: we just clear the buffer when it gets full
+//!                 buff.clear();
+//!             }
+//!         // Carriage return
+//!         if byte == 13 {
+//!             while let Some(x) = buff.pop(){
+//!                 while serial.write(x).is_err() {
+//!                     // resend if tx buffer is full
+//!                     // should put a timeout in here later
+//!                 }
+//!             }
 //!         }
 //!     } else {
 //!         // Only reachable through `rtfm::request(loopback)`

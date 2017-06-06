@@ -15,6 +15,7 @@ cortex-m-rtfm = "0.1.0"
 stm32f103xx = { git = "https://github.com/etrombly/stm32f103xx" }
 hal = { git = "https://github.com/etrombly/hal" }
 haldriver = { git = "https://github.com/etrombly/haldriver" }
+heapless = "0.1.0"
 
 [dependencies.cast]
 default-features = false
