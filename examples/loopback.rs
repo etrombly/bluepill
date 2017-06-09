@@ -43,7 +43,7 @@ fn init(ref priority: P0, threshold: &TMax) {
     let rcc = RCC.access(priority, threshold);
     let usart3 = USART3.access(priority, threshold);
 
-    let serial = Serial{usart: &**usart3};
+    let serial = Serial{usart: &usart3};
 
     serial.init(&gpiob, &rcc, BAUD_RATE);
 }
@@ -68,7 +68,7 @@ tasks!(stm32f103xx, {
 // Send back the received byte
 fn loopback(_task: Usart3, ref priority: P1, ref threshold: T1) {
     let usart3 = USART3.access(priority, threshold);
-    let serial = Serial{usart: &**usart3};
+    let serial = Serial{usart: &usart3};
 
     if let Some(byte) = serial.read() {
         if serial.write(byte).is_err() {

@@ -51,11 +51,11 @@ fn init(ref priority: P0, threshold: &TMax) {
     let rcc = RCC.access(priority, threshold);
     let tim3 = TIM3.access(priority, threshold);
     let flash = FLASH.access(priority, threshold);
-    let timer = Timer::new(&**tim3);
-    let in1 = Pin{pin: 1, port: &**gpioa};
-    let in2 = Pin{pin: 2, port: &**gpioa};
-    let in3 = Pin{pin: 3, port: &**gpioa};
-    let in4 = Pin{pin: 4, port: &**gpioa};
+    let timer = Timer::new(&tim3);
+    let in1 = Pin::new(1, &gpioa);
+    let in2 = Pin::new(2, &gpioa);
+    let in3 = Pin::new(3, &gpioa);
+    let in4 = Pin::new(4, &gpioa);
 
     // set clock to 72Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S32Mhz);
@@ -94,15 +94,15 @@ fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
     // Task local data
     // have to track step manually since you can't persist
     // a stepper between calls to periodic 
-    static STEP: Local<u16, Tim3> = Local::new(0);
+    static STEP: Local<u8, Tim3> = Local::new(0);
 
     let tim3 = TIM3.access(priority, threshold);
-    let timer = Timer{timer: &**tim3};
+    let timer = Timer{timer: &tim3};
     let gpioa = GPIOA.access(priority, threshold);
-    let in1 = Pin{pin: 1, port: &**gpioa};
-    let in2 = Pin{pin: 2, port: &**gpioa};
-    let in3 = Pin{pin: 3, port: &**gpioa};
-    let in4 = Pin{pin: 4, port: &**gpioa};
+    let in1 = Pin::new(1, &gpioa);
+    let in2 = Pin::new(2, &gpioa);
+    let in3 = Pin::new(3, &gpioa);
+    let in4 = Pin::new(4, &gpioa);
 
     if timer.clear_update_flag().is_ok() {
         let step = STEP.borrow_mut(&mut task);
@@ -116,7 +116,7 @@ fn periodic(mut task: Tim3, ref priority: P1, ref threshold: T1) {
 
         stepper.step();
 
-        if *step < 7 {
+        if *step < 3 {
             *step += 1;
         } else {
             *step = 0;

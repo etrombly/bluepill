@@ -88,17 +88,17 @@ fn init(ref priority: P0, threshold: &TMax) {
     let tim3 = TIM3.access(priority, threshold);
     let tim2 = TIM2.access(priority, threshold);
     let flash = FLASH.access(priority, threshold);
-    let timer = Timer::new(&**tim3);
-    let timer2 = Timer::new(&**tim2);
+    let timer = Timer::new(&tim3);
+    let timer2 = Timer::new(&tim2);
     // stepper pins
-    let in1 = Pin::new(1, &**gpioa);
-    let in2 = Pin::new(2, &**gpioa);
-    let in3 = Pin::new(3, &**gpioa);
-    let in4 = Pin::new(4, &**gpioa);
-    let in5 = Pin::new(8, &**gpioa);
-    let in6 = Pin::new(9, &**gpioa);
-    let in7 = Pin::new(10, &**gpioa);
-    let in8 = Pin::new(11, &**gpioa);
+    let in1 = Pin::new(1, &gpioa);
+    let in2 = Pin::new(2, &gpioa);
+    let in3 = Pin::new(3, &gpioa);
+    let in4 = Pin::new(4, &gpioa);
+    let in5 = Pin::new(8, &gpioa);
+    let in6 = Pin::new(9, &gpioa);
+    let in7 = Pin::new(10, &gpioa);
+    let in8 = Pin::new(11, &gpioa);
 
     // set clock to 32Mhz
     frequency::init(&rcc, &flash, frequency::Speed::S32Mhz);
@@ -154,16 +154,16 @@ fn stepper(mut task: Tim3, ref priority: P2, ref threshold: T2) {
     static YINDEX: Local<u8, Tim3> = Local::new(0);
 
     let tim3 = TIM3.access(priority, threshold);
-    let timer = Timer{timer: &**tim3};
+    let timer = Timer{timer: &tim3};
     let gpioa = GPIOA.access(priority, threshold);
-    let in1 = Pin::new(1, &**gpioa);
-    let in2 = Pin::new(2, &**gpioa);
-    let in3 = Pin::new(3, &**gpioa);
-    let in4 = Pin::new(4, &**gpioa);
-    let in5 = Pin::new(8, &**gpioa);
-    let in6 = Pin::new(9, &**gpioa);
-    let in7 = Pin::new(10, &**gpioa);
-    let in8 = Pin::new(11, &**gpioa);
+    let in1 = Pin::new(1, &gpioa);
+    let in2 = Pin::new(2, &gpioa);
+    let in3 = Pin::new(3, &gpioa);
+    let in4 = Pin::new(4, &gpioa);
+    let in5 = Pin::new(8, &gpioa);
+    let in6 = Pin::new(9, &gpioa);
+    let in7 = Pin::new(10, &gpioa);
+    let in8 = Pin::new(11, &gpioa);
 
     if timer.clear_update_flag().is_ok() {
         let xsteps = XSTEPS.access(priority, threshold);
@@ -227,7 +227,7 @@ fn controller(mut task: Tim2, ref priority: P1, ref threshold: T1) {
     static YINDEX: Local<u8, Tim2> = Local::new(0);
 
     let tim2 = TIM2.access(priority, threshold);
-    let timer = Timer{timer: &**tim2};
+    let timer = Timer{timer: &tim2};
 
 
     if timer.clear_update_flag().is_ok() {
